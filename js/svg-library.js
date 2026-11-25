@@ -5,7 +5,7 @@ export const SVG_TEMPLATES = {
     {n:8,x:85,y:18},{n:7,x:85,y:33},{n:6,x:85,y:48},{n:5,x:85,y:63}
   ]},
   SOT23: { name: "SOT-23", width: 100, height: 80, pins: [
-    {n:1,x:25,y:62},{n:2,x:50,y:62},{n:3,x:75,y:18}
+    {n:1,x:25,y:62},{n:2,x:75,y:62},{n:3,x:50,y:18}
   ]},
   RES2: { name: "Resistor / 2-pin", width: 100, height: 80, pins: [
     {n:1,x:15,y:40},{n:2,x:85,y:40}
