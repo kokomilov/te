@@ -11,8 +11,8 @@ export const SVG_TEMPLATES = {
     {n:1,x:15,y:40},{n:2,x:85,y:40}
   ]},
   QFN16: { name: "QFN-16", width: 100, height: 80, pins: [
-    ...Array.from({length:4},(_,i)=>({n:i+1,x:20+i*20,y:8})),
-    ...Array.from({length:4},(_,i)=>({n:5+i,x:92,y:20+i*15})),
+    ...Array.from({length:4},(_,i)=>({n:i+1,x:20+i*90,y:8})),
+    ...Array.from({length:4},(_,i)=>({n:5+i,x:92,y:90+i*15})),
     ...Array.from({length:4},(_,i)=>({n:9+i,x:80-i*20,y:72})),
     ...Array.from({length:4},(_,i)=>({n:13+i,x:8,y:60-i*15}))
   ]}
