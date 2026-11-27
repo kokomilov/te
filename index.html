@@ -3,112 +3,127 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Boardview Lab — Local PCB Workspace</title>
+  <title>Electric Diagnostic — PCB Workbench</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <strong>BOARDVIEW LAB</strong>
-      <span class="subtle">Local PCB workspace</span>
-    </div>
-    <div class="top-actions">
-      <button id="newProjectBtn" class="quiet">New project</button>
-      <button id="exportBtn">Export JSON</button>
-      <label class="button quiet">Import JSON<input id="importProjectInput" type="file" accept=".json,application/json" hidden></label>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="brand"><strong>ELECTRIC DIAGNOSTIC</strong><span>PCB diagnostic workbench</span></div>
+  <div class="top-actions">
+    <button id="newProjectBtn" class="quiet">New project</button>
+    <button id="exportBtn">Export project</button>
+    <label class="button quiet">Import project<input id="importInput" type="file" accept=".json,application/json" hidden></label>
+  </div>
+</header>
 
-  <main class="app-shell">
-    <aside class="sidebar">
-      <section class="panel">
-        <h2>Project</h2>
-        <label>Project name<input id="projectName" value="Untitled board"></label>
-        <label>Board revision<input id="boardRevision" value="A"></label>
-        <div class="button-row">
-          <label class="button full">Load PCB image / SVG<input id="boardFileInput" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/*" hidden></label>
+<main class="app">
+  <section class="left-column">
+    <section class="panel board-panel">
+      <div class="panel-head">
+        <div><h2>PCB viewer</h2><span class="muted" id="boardMeta">No board image loaded</span></div>
+        <div class="side-switch" role="group" aria-label="PCB side">
+          <button class="side-btn active" data-side="top">TOP</button>
+          <button class="side-btn" data-side="bottom">BOTTOM</button>
         </div>
-        <label class="button full secondary">Add Gerber files<input id="gerberInput" type="file" accept=".gbr,.ger,.gerber,.gtl,.gbl,.gto,.gbo,.gts,.gbs,.gko,.gm1,.drl" multiple hidden></label>
-        <p class="hint">Image/SVG is used as the visual board layer. Gerbers are retained in the project manifest; rendering/import is a planned adapter.</p>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading"><h2>Workspace tools</h2></div>
-        <div class="tool-grid">
+      </div>
+      <div class="board-toolbar">
+        <label class="button secondary">Load <span id="loadSideLabel">TOP</span> image / SVG<input id="boardImageInput" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/*" hidden></label>
+        <div class="tool-switch">
           <button data-mode="select" class="tool active">Select</button>
-          <button data-mode="point" class="tool">Add pinpoint</button>
+          <button data-mode="point" class="tool">Add testpoint</button>
           <button data-mode="component" class="tool">Place component</button>
-          <button id="fitBoardBtn" class="tool">Fit board</button>
         </div>
-        <label>Active component template
-          <select id="templateSelect">
-            <option value="SOIC8">SOIC-8</option>
-            <option value="SOT23">SOT-23</option>
-            <option value="RES2">Resistor / 2-pin</option>
-            <option value="QFN16">QFN-16</option>
-          </select>
-        </label>
-        <p class="hint">Choose “Add pinpoint” and click the board for a free test point. Choose “Place component” and click to place a component with template-defined pins.</p>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <h2>Diagnostic setups</h2>
-          <button id="addSetupBtn" class="small">+ Add</button>
-        </div>
-        <select id="setupSelect" size="5" aria-label="Diagnostic setups"></select>
-        <div class="button-row">
-          <button id="renameSetupBtn" class="secondary">Rename</button>
-          <button id="deleteSetupBtn" class="danger">Delete</button>
-        </div>
-        <label class="inline-check"><input id="showPinsToggle" type="checkbox" checked> Show pinpoints</label>
-        <label class="inline-check"><input id="showComponentsToggle" type="checkbox" checked> Show components</label>
-      </section>
-
-      <section class="panel">
-        <h2>Component library</h2>
-        <div id="componentList" class="list"></div>
-      </section>
-    </aside>
-
-    <section class="workspace">
-      <div class="canvas-toolbar">
-        <div><strong id="canvasTitle">PCB canvas</strong><span id="canvasMeta" class="subtle">No board loaded</span></div>
-        <div class="legend"><span><i class="dot blue"></i>Pinpoint</span><span><i class="dot amber"></i>Component pin</span></div>
+        <select id="componentTemplate" aria-label="Component footprint">
+          <option value="SOIC8">SOIC-8</option><option value="SOT23">SOT-23</option>
+          <option value="RES2">2-pin component</option><option value="QFN16">QFN-16</option>
+        </select>
+        <button id="fitBtn" class="quiet">Fit board</button>
       </div>
       <div id="boardViewport" class="board-viewport">
         <div id="boardStage" class="board-stage">
-          <div id="boardBackground" class="board-background">
-            <div class="empty-state">
-              <strong>Load a PCB image or SVG</strong>
-              <span>PNG, JPG, WebP and SVG supported as visual backgrounds</span>
-            </div>
-          </div>
-          <svg id="overlay" class="overlay" xmlns="http://www.w3.org/2000/svg" aria-label="PCB annotations"></svg>
+          <div id="boardBackground" class="board-background"><div class="empty">Load a TOP-side PCB image or SVG to begin.</div></div>
+          <svg id="boardOverlay" class="overlay" viewBox="0 0 1000 700" aria-label="PCB annotations"></svg>
         </div>
       </div>
-      <div class="statusbar">
-        <span id="statusText">Ready · Local autosave enabled</span>
-        <span id="cursorPosition">x: — y: —</span>
+      <div class="status-line"><span id="statusText">Ready · Local browser storage</span><span id="cursorText">x: — y: —</span></div>
+    </section>
+
+    <section class="panel diagram-panel">
+      <div class="panel-head">
+        <div><h2>Functional block diagram</h2><span class="muted">Pin-to-pin relationships only — no copper rail tracing</span></div>
+        <button id="toggleDiagramBtn" class="quiet" aria-expanded="true">Hide diagram</button>
+      </div>
+      <div id="diagramWrap">
+        <div class="diagram-toolbar">
+          <span class="muted">Select a node or pin to cross-probe the PCB and testpoint list.</span>
+          <button id="addConnectionBtn" class="secondary">+ Add pin connection</button>
+        </div>
+        <div id="blockDiagram" class="block-diagram">
+          <div class="diagram-node input-node" data-node="J1"><b>INPUT</b><strong>J1</strong><small>12V IN · Pin 1</small></div>
+          <div class="diagram-node process-node" data-node="U1"><b>POWER</b><strong>U1</strong><small>DC/DC converter</small></div>
+          <div class="diagram-node output-node" data-node="J2"><b>OUTPUT</b><strong>J2</strong><small>5V OUT · Pin 1</small></div>
+          <svg class="diagram-lines" viewBox="0 0 900 140" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M210 70 H340 M560 70 H690" />
+          </svg>
+          <div class="diagram-note">Example functional view. Add your own pin relationships in the Connections panel.</div>
+        </div>
+        <div class="connection-editor">
+          <div class="connection-title"><strong>Pin connections</strong><span class="muted">A connection groups endpoints; it does not draw or calculate copper routes.</span></div>
+          <div id="connectionsList" class="connection-list"></div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="right-column">
+    <section class="panel testpoints-panel">
+      <div class="panel-head">
+        <div><h2>Testpoint explorer</h2><span class="muted">Search, filter and select testpoints</span></div>
+        <button id="addTestpointBtn">+ Add</button>
+      </div>
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Search testpoint, net, component…">
+        <select id="sideFilter"><option value="all">Both PCB sides</option><option value="top">Top side</option><option value="bottom">Bottom side</option></select>
+        <select id="resultFilter"><option value="all">All results</option><option value="pass">PASS</option><option value="fail">FAIL</option><option value="na">Not tested</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Testpoint</th><th>Side</th><th>Net</th><th>Expected</th><th>Result</th></tr></thead>
+          <tbody id="testpointRows"></tbody>
+        </table>
+      </div>
+      <div class="selection-card" id="selectionCard">
+        <div class="selection-empty">Select a testpoint from the table or PCB.</div>
       </div>
     </section>
 
-    <aside class="inspector">
-      <section class="panel">
-        <h2>Selection inspector</h2>
-        <div id="inspectorContent" class="hint">Select a component or pinpoint to inspect its properties.</div>
-      </section>
-      <section class="panel">
-        <h2>Current setup</h2>
-        <div id="setupSummary" class="hint"></div>
-      </section>
-      <section class="panel">
-        <h2>Local data</h2>
-        <p class="hint">Project data is stored in this browser using IndexedDB. Export JSON regularly for backup. Imported board files are stored as local blobs.</p>
-        <button id="saveNowBtn" class="full secondary">Save now</button>
-      </section>
-    </aside>
-  </main>
-  <script type="module" src="js/app.js"></script>
+    <section class="panel inspector-panel">
+      <div class="panel-head"><div><h2>Manual measurement</h2><span class="muted">Measurement is stored as history</span></div></div>
+      <div id="measurementForm" class="measurement-form">
+        <p class="muted">Select a testpoint to enter a measurement.</p>
+      </div>
+    </section>
+    <section class="panel project-panel">
+      <div class="panel-head"><div><h2>Project</h2><span class="muted">Local data · Export for backup</span></div></div>
+      <label>Project name<input id="projectName" value="Untitled board"></label>
+      <label>Board revision<input id="boardRevision" value="A"></label>
+      <button id="saveNowBtn" class="secondary full">Save now</button>
+    </section>
+  </section>
+</main>
+
+<dialog id="connectionDialog">
+  <form method="dialog" id="connectionForm">
+    <div class="dialog-head"><h2>Add pin connection</h2><button value="cancel" class="icon-button" aria-label="Close">×</button></div>
+    <label>Connection name<input id="connectionName" required placeholder="e.g. NET_5V_MAIN"></label>
+    <label>Endpoint 1<input id="endpointA" required placeholder="e.g. U1.3"></label>
+    <label>Endpoint 2<input id="endpointB" required placeholder="e.g. J2.1"></label>
+    <label>Additional endpoints <input id="endpointExtra" placeholder="Comma-separated, e.g. TP002, C14.1"></label>
+    <p class="muted">Enter component reference + pin number, connector reference + pin number, or testpoint ID. These are logical endpoint labels, not physical trace geometry.</p>
+    <div class="dialog-actions"><button value="cancel" class="quiet">Cancel</button><button id="saveConnectionBtn" value="default">Save connection</button></div>
+  </form>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
