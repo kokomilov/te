@@ -1,61 +1,37 @@
-# Boardview Lab — initial architecture
+[README.md](https://github.com/user-attachments/files/35498571/README.md)
+# Electric Diagnostic — PCB Workbench v2
 
-A browser-only PCB boardview starter. No server or external library is required.
+Browser-only HTML/CSS/JavaScript project. No framework or server-side database is required.
 
 ## Run
-Because this project uses JavaScript ES modules and IndexedDB, serve the folder from localhost (do not open `index.html` as a `file://` URL).
+Because this project uses JavaScript ES modules and IndexedDB, serve the folder from localhost:
 
-Examples:
-- `python -m http.server 8000`
-- Open `http://localhost:8000`
+```bash
+python -m http.server 8000
+```
 
-## Current prototype
-- PCB visual background upload: PNG, JPG, WebP, SVG.
-- Add arbitrary coordinate pinpoints to the active setup.
-- Place simple SVG-template components: SOIC-8, SOT-23, 2-pin resistor, QFN-16.
-- Switch between independent pinpoint setups.
-- Inspect/edit pinpoint name, net, measurement type, expected value and unit.
-- Local persistence with IndexedDB for project JSON and uploaded binary assets.
-- Export/import project JSON.
-- Store Gerber files in IndexedDB as project assets.
+Open `http://localhost:8000`.
 
-## Important prototype limitations
-- Gerber files are stored, but not yet parsed or rendered. Add a Gerber renderer/import adapter in a later phase.
-- PCB visual scaling currently uses a fixed 1000 × 700 logical canvas. A calibration workflow is required before using coordinates for metrology or manufacturing.
-- Component templates are illustrative package outlines. Verify pin numbering and pin coordinates against each component datasheet/footprint before diagnostic use.
-- Pin click selection is implemented. Component-pin-to-board-coordinate transform and “create pinpoint from selected component pin” should be added before relying on component pin points.
-- No netlist parser, schematic cross-probing, electrical connectivity inference, or measurement instrument integration yet.
-- Browser-local data is device/browser specific. Export backups; clearing browser data can remove the local database.
+## Included in this increment
+- Two independent PCB visual assets: TOP and BOTTOM.
+- Each side has its own image/SVG background and its own testpoint coordinates.
+- Switch sides without duplicating electrical connectivity.
+- Add testpoints by selecting **Add testpoint** and clicking the active board.
+- Search and filter testpoints by text, PCB side and last measurement result.
+- Toggleable functional block diagram.
+- Pin-to-pin connection groups. A connection is a set of endpoint labels such as `U1.3`, `J2.1`, or `TP002`.
+- Selecting a connection highlights matching endpoints/testpoints. This does not render copper rails or infer physical routing.
+- Manual measurements with timestamp, technician, notes and PASS/FAIL evaluation.
+- Local IndexedDB persistence and JSON project export/import.
+- Migration helper for the original schema v1 `setups[].pinpoints[]` records.
 
-## Architecture
-- `js/schema.js`: project schema and normalization.
-- `js/storage.js`: IndexedDB project and binary asset persistence.
-- `js/board.js`: board visual asset handling and pointer-to-board coordinate conversion.
-- `js/svg-library.js`: reusable package templates and local pin coordinate definitions.
-- `js/render.js`: SVG overlay rendering for components and pinpoints.
-- `js/app.js`: UI orchestration and event wiring.
-- `css/styles.css`: responsive interface.
+## Important scope notes
+1. This version stores TOP and BOTTOM board images separately. It does not mirror or flip the image automatically; upload each side in the orientation you want to work with.
+2. Pin connection groups are logical relationships only. The application does not parse Gerber files, infer continuity, calculate copper paths, or render full rail traces.
+3. Component-pin coordinates are placeholders in this increment. Pin endpoint labels can be entered in the connection editor, but precise transformed footprint-pin placement and cross-probing should be the next enhancement.
+4. The sample diagram nodes are illustrative. Replace or extend them with your board's functional blocks.
+5. PASS/FAIL is calculated from the configured minimum and maximum limits. If neither limit is set, a configured expected value is compared exactly; define tolerances for practical measurements.
+6. Data is stored in the current browser/device. Export JSON regularly for backup. Uploaded image blobs are stored in IndexedDB and are not embedded in the JSON export in this prototype.
 
-## Data model
-Project
-- `board`: logical dimensions, visual asset ID/type, Gerber asset IDs.
-- `components[]`: stable ID, reference designator, template ID, board x/y, rotation.
-- `setups[]`: independent diagnostic configurations.
-- `setups[].pinpoints[]`: test point ID, coordinate, optional component/pin reference, net and measurement definition.
-- `assets[]`: metadata for binary assets held in IndexedDB.
-
-## Recommended next implementation increments
-1. Add calibration: define two known points or board dimensions, derive logical coordinate scale.
-2. Add transformed pin geometry: compute pin positions from component origin, rotation and template coordinates.
-3. Add “Create pinpoint at component pin” action and allow one physical point to be referenced by multiple setups.
-4. Add layer controls and Gerber parser/renderer adapter (copper, solder mask, silkscreen, outline, drill).
-5. Add component-template editor with SVG preview, pin numbering, pin coordinates, polarity and package metadata.
-6. Add measurement records as history entries (timestamp, instrument, measured value, operator, conditions) separate from expected limits.
-7. Add autosave debounce, project list/open/delete, schema migrations and IndexedDB quota/error handling.
-
-## Coordinate and measurement rules
-- All board coordinates are logical SVG coordinates, not screen pixels.
-- Component template pins are local coordinates relative to the template origin.
-- Store expected values/limits separately from measured observations.
-- A diagnostic setup is a view/configuration over the same board and components; do not duplicate the board or component records per setup.
-- Prefer stable IDs over array indices. Reference designators are labels, not primary keys.
+## Next recommended increment
+Add a pin/connector editor with component reference, pin number, pin name, side and board coordinates. This will let the diagram, connection groups, PCB markers and testpoint table use one canonical endpoint ID.
