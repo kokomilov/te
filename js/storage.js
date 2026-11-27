@@ -1,50 +1,50 @@
-const DB_NAME = "boardview-lab";
+const DB_NAME = "electric-diagnostic";
 const DB_VERSION = 1;
 let dbPromise;
-function db() {
+function openDB() {
   if (!dbPromise) dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const d = request.result;
-      if (!d.objectStoreNames.contains("projects")) d.createObjectStore("projects", { keyPath: "id" });
-      if (!d.objectStoreNames.contains("assets")) d.createObjectStore("assets", { keyPath: "id" });
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains("projects")) db.createObjectStore("projects", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("assets")) db.createObjectStore("assets", { keyPath: "id" });
     };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
   return dbPromise;
 }
 export async function saveProject(project) {
-  const d = await db();
+  const db = await openDB();
   project.updatedAt = new Date().toISOString();
   return new Promise((resolve, reject) => {
-    const tx = d.transaction("projects", "readwrite");
+    const tx = db.transaction("projects", "readwrite");
     tx.objectStore("projects").put(project);
     tx.oncomplete = () => resolve(project.id);
     tx.onerror = () => reject(tx.error);
   });
 }
 export async function loadLatestProject() {
-  const d = await db();
+  const db = await openDB();
   return new Promise((resolve, reject) => {
-    const req = d.transaction("projects").objectStore("projects").getAll();
-    req.onsuccess = () => resolve(req.result.sort((a,b) => b.updatedAt.localeCompare(a.updatedAt))[0] || null);
+    const req = db.transaction("projects").objectStore("projects").getAll();
+    req.onsuccess = () => resolve(req.result.sort((a,b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""))[0] || null);
     req.onerror = () => reject(req.error);
   });
 }
 export async function saveAsset(asset) {
-  const d = await db();
+  const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = d.transaction("assets", "readwrite");
+    const tx = db.transaction("assets", "readwrite");
     tx.objectStore("assets").put(asset);
     tx.oncomplete = () => resolve(asset.id);
     tx.onerror = () => reject(tx.error);
   });
 }
 export async function getAsset(id) {
-  const d = await db();
+  const db = await openDB();
   return new Promise((resolve, reject) => {
-    const req = d.transaction("assets").objectStore("assets").get(id);
+    const req = db.transaction("assets").objectStore("assets").get(id);
     req.onsuccess = () => resolve(req.result || null);
     req.onerror = () => reject(req.error);
   });
